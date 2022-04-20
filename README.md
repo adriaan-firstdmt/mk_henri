@@ -26,7 +26,7 @@ Environment Variables can be set in .env an example file of the required Variabl
 
 ####  Task 1 - Ansible [Repo](https://github.com/HGriessel/mk_ansible.git)
 
-1. Fix MySQL user privileges 
+~~1. Fix MySQL user privileges~~
 2. Implement tags
 3. Setup Lets Encrypt certificate for SSL
 4. Implement Ansible Vault
