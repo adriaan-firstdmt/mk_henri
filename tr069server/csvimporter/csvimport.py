@@ -13,6 +13,7 @@ class CsvImport:
         self.csv_data = self.csv_file.read().decode("utf-8").split()
         self.delimiter = delimiter
 
+# TODO add Line fault dataclass or similar class to improve future  handeling of line faults
 
 class DeviceCsvImport(CsvImport):
     def validate_unique_ip(self,ipaddress):
@@ -56,12 +57,11 @@ class DeviceCsvImport(CsvImport):
     def import_data(self,strict=True) -> Dict:
         """
             Import data from csv_file
-            if strict true data will not be imported 
+            if strict true invalid data will not be cause no data to be imported 
         """
         data_results = self.validate_csv_data()
        
         if strict and data_results is not True:
-            print(data_results)
             return data_results
         
         for row_count,row in enumerate(self.csv_data):
