@@ -68,8 +68,8 @@ class DeviceCsvImport(CsvImport):
             collums = row.split(self.delimiter)
             device = Device.objects.create(ip=collums[1],customer_code=collums[0])
             # print(device)
-            device.provisioningstatus_set.create()
-        
+            provisioningstatus = ProvisioningStatus(device=device,status=False)
+            provisioningstatus.save()
 
         return data_results
         

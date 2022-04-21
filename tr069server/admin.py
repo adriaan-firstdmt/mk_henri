@@ -40,14 +40,14 @@ class DeviceAdmin(admin.ModelAdmin):
            if data_results is not True: 
                 #Display error lines
                print("data results not true")
-               return render(reqeust,"admin/tr069server/device/csv_upload.html", data)       
+               return render(reqeust,"/admin/tr069server/device/csv_upload.html", data)       
            
            print("import successful")    
-           return redirect('/admin/tr069server/device/')
+           return redirect('/admin/tr069server/device')
             
       
         data = {"form": csv_form}
-        return render(reqeust,"admin/tr069server/device/csv_upload.html", data)
+        return render(reqeust,"/admin/tr069server/device/csv_upload.html", data)
 
 class ProvisioningStatusAdmin(admin.ModelAdmin):
     pass
