@@ -26,11 +26,10 @@ Environment Variables can be set in .env an example file of the required Variabl
 
 ####  Task 1 - Ansible [Repo](https://github.com/HGriessel/mk_ansible.git)
 
-~~1. Fix MySQL user privileges~~
-~~4. Implement Ansible Vault~~
-
+1. ~~Fix MySQL user privileges~~
 1. Implement tags
 3. Setup Lets Encrypt certificate for SSL
+4. ~~Implement Ansible Vault~~
 5. Setup CRON JOB for TASK 4
 
 #### Task 2
@@ -43,7 +42,8 @@ Environment Variables can be set in .env an example file of the required Variabl
     2. that returns whether validation was successful 
 
 ###TASK 4 & 5
-1. Finish provisioning Class
+1. ~~Finish provisioning Class
 2. Implement a CRON job that
-    1. Uses native SQL query language to get unprovisioned Routers
-    2. Then run a python script that interfaces with the app's API to configure the said routers provisioning status
+    1. ~~Uses native SQL query language to get unprovisioned Routers
+    2. ~~Then run a python script that interfaces with the app's API to configure the said routers provisioning status
+    3. run as Cron see ansible task point 5
