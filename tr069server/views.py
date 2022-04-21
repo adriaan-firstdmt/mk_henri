@@ -1,36 +1,47 @@
-from django.shortcuts import render
-from django.contrib.auth.models import User, Group
-
 from rest_framework import viewsets
 from rest_framework import permissions
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from rest_framework import filters
+
 from tr069server.models import Device
 
 from tr069server.serializers import UserSerializer, DeviceSerializer
 
-# Create your views here.
-class UserViewSet(viewsets.ModelViewSet):
-    """
-    API endpoint that allows users to be viewed or edited.
-    """
-    queryset = User.objects.all().order_by('-date_joined')
-    serializer_class = UserSerializer
-    permission_classes = [permissions.IsAuthenticated]
 
+# Create your views here.
 
 class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.all()
     serializer_class= DeviceSerializer
     permission_classes = [permissions.IsAuthenticated]
-    lookup_field = 'customer_code'
 
-    @action(detail=True, methods=["get"])
-    def set_status_true(self,request,customer_code):
-        device = Device.objects.filter(customer_code=customer_code).get()
+    search_fields = ['ip']
+    filter_backends = (filters.SearchFilter,)
+
+    @action(detail=False, methods=["get","post"])
+    def set_status_true(self,request) -> Response:
+        """ Custom api action that sets the status of a device found by IP address if IP"""
+        ip = request.data['ip']
+        device_query = Device.objects.filter(ip=ip)
+
+        if device_query.count() != 1:
+            return Response({'success':True, "status_changed":False },status=status.HTTP_404_NOT_FOUND)
+
+        device = device_query.get()
         device.provisioningstatus.status = True
         device.provisioningstatus.save()
-        changed_status = device.ip
+
         return Response({'success':True, "status_changed":device.provisioningstatus.status },status=status.HTTP_200_OK)
+    
+    # TODO Add api to provision device
+    @action(detail=False, methods=["get","post"])
+    def provision_device(self,request) -> Response:
+        ip = request.data['ip']
+        device_query = Device.objects.filter(ip=ip)
+
+        if device_query.count() != 1:
+            return Response({'success':True, "status_changed":False },status=status.HTTP_404_NOT_FOUND)
         
+        return Response({'success':True, "status_changed":True },status=status.HTTP_200_OK)

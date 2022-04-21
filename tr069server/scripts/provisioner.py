@@ -1,36 +1,60 @@
-from dataclasses import dataclass
 from typing import List
 import mysql.connector
 from pathlib import Path
 import paramiko
 import environ
-import os
+import requests
+from requests.auth import HTTPBasicAuth
 
 
 
 
 class Mirkotik:
-    def __init__(self,host:str,ssh_port:int=22,username:str="admin",password:str="") -> None:
+    """ Class for handeling mikrotik provisioning"""
+    def __init__(self,customer_code:str,host:str,ssh_port:int=22,username:str="admin",password:str="") -> None:
         self.host = host
         self.port = ssh_port
         self.username = username
         self.password = password
-
-    def ssh_connect(self) -> paramiko.SSHClient:
-        ssh = paramiko.SSHClient()
-        ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-        ssh.connect(self.host, self.port, self.username, self.password)
+        self.customer_code = customer_code
     
-    # TODO validate connction in order not to try and provisioned unreacheble devices
+    def __repr__(self) -> str:
+        cls = type(self)
+        return f"{cls.__name__} object at {hex(id(self))} {self.customer_code} {self.host}"
 
+    def __str__(self) -> str:
+        return f"{self.customer_code} {self.host}"
 
-    def set_device_status(self) -> bool:
-        # utilised API to set device status
-            #if run_tr069_ssh_command successfull
+    def ssh_connect(self,timeout:int=5) -> bool:
+        self.ssh_client = paramiko.SSHClient()
+        self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+        # TODO validate connection in order not to try and provisioned unreacheble devices
+        # TODO log errors like auth errors
+
+        try:
+            self.ssh_client.connect(self.host, self.port, self.username, self.password,timeout=timeout)
+        except TimeoutError as e:
+            return False
+        
         return True
 
+
+    def set_device_status_true(self) -> bool:
+        url = "mem.griessels.site"
+        response = requests.post(f"http://{url}/api/devices/set_status_true/",  auth=HTTPBasicAuth('root', 'eentotagt'),data={"ip":self.host})
+        return response.json()['success']
+
+
     def run_tr069_ssh_command(self) -> bool:
-        command = "/tr069-client"
+        command = "/tr069-client set acs-url=\\ \nhttp://demo-axtract.firstdmt.com:9675/live/CPEManager/CPEs/genericTR69 \\ \ncheck-certificate=no connection-request-password=Jo68gae2oNhG \\ \nconnection-request-username=ADqV1FkIrAtW enabled=yes \\ \nperiodic-inform-interval=5m"
+
+        if not self.ssh_connect():
+            return False
+        _stdin, _stdout,_stderr = self.ssh_client.exec_command(f"{command}")
+        error =_stderr.read().decode()
+
+        if error != "": 
+            return False
         return True
     
 
@@ -46,10 +70,15 @@ def get_unprovisioned_devices(db_user:str, db_pass:str, db_name,host="localhost"
         database=db_name
     )
     mycursor=mydb.cursor()
-    mycursor.execute("SELECT ip,status FROM tr069server_provisioningstatus WHERE status=0")
+    # mycursor.execute("SELECT tr069server_device.ip FROM tr069server_device WHERE tr069server_provisioningstatus.status=0")
+
+    """ SELECT provisioningstatus.ip, provisioningstatus.status,device.customer_code FROM device
+             INNER JOIN provisioningstatus 
+             ON provisioningstatus.ip = device.ip  ") """
+    mycursor.execute("SELECT tr069server_provisioningstatus.ip,tr069server_provisioningstatus.status,tr069server_device.customer_code FROM tr069server_device INNER JOIN tr069server_provisioningstatus ON tr069server_provisioningstatus.ip = tr069server_device.ip WHERE tr069server_provisioningstatus.status = 0")
 
     for row in mycursor:
-        device = Mirkotik(row[0],row[1])
+        device = Mirkotik(row[2],row[0],username="root",password="een1T0T8agt")
         devices.append(device)
     
     return devices
@@ -64,9 +93,9 @@ def main() -> None:
     devices = get_unprovisioned_devices(db_user,db_pass,db_name)
     
     for device in devices:
-        device.run_tr069_command()
+        if not device.run_tr069_ssh_command():
+            device.set_device_status_true()
     
-
 
 if __name__ == "__main__":
    main()
