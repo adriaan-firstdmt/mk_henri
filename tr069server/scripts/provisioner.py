@@ -32,7 +32,6 @@ class Mirkotik:
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         # TODO validate connection in order not to try and provisioned unreacheble devices
         # TODO log errors like auth errors
-            # log error where tr069 packages is not installed
 
         try:
             self.ssh_client.connect(self.host, self.port, self.username, self.password,timeout=timeout)
@@ -55,6 +54,8 @@ class Mirkotik:
         error =_stderr.read().decode()
         
         # TODO improve error handling
+            # log error where tr069 packages is not installed
+
 
         if error != "": 
             return False
