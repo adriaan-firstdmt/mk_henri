@@ -18,12 +18,13 @@ from django.urls import path,include
 from rest_framework import routers
 from tr069server import views
 
+
 router = routers.DefaultRouter()
-router.register(r'users', views.UserViewSet)
 router.register(r'devices', views.DeviceViewSet)
 
 
 urlpatterns = [
+    path('',views.home_redirect_view),
     path('api/',include(router.urls)),
     path('admin/', admin.site.urls),
 

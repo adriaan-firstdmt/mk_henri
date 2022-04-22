@@ -11,6 +11,8 @@ from requests.auth import HTTPBasicAuth
 
 class Mirkotik:
     """ Class for handeling mikrotik provisioning"""
+    # TODO create parent class to handle multiple types of devices
+    # TODO use class in API actions to provision device and set status not just set the status
     def __init__(self,customer_code:str,host:str,ssh_port:int=22,username:str="admin",password:str="") -> None:
         self.host = host
         self.port = ssh_port
@@ -30,12 +32,12 @@ class Mirkotik:
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
         # TODO validate connection in order not to try and provisioned unreacheble devices
         # TODO log errors like auth errors
+            # log error where tr069 packages is not installed
 
         try:
             self.ssh_client.connect(self.host, self.port, self.username, self.password,timeout=timeout)
         except TimeoutError as e:
             return False
-        
         return True
 
 
@@ -47,19 +49,17 @@ class Mirkotik:
 
     def run_tr069_ssh_command(self) -> bool:
         command = "/tr069-client set acs-url=\\ \nhttp://demo-axtract.firstdmt.com:9675/live/CPEManager/CPEs/genericTR69 \\ \ncheck-certificate=no connection-request-password=Jo68gae2oNhG \\ \nconnection-request-username=ADqV1FkIrAtW enabled=yes \\ \nperiodic-inform-interval=5m"
-
         if not self.ssh_connect():
             return False
         _stdin, _stdout,_stderr = self.ssh_client.exec_command(f"{command}")
         error =_stderr.read().decode()
+        
+        # TODO improve error handling
 
         if error != "": 
             return False
         return True
-    
-
-
-    
+       
 # in normal setting this will have also been a api reqeust to get all unprovisioned devices 
 def get_unprovisioned_devices(db_user:str, db_pass:str, db_name,host="localhost")-> List:
     devices = []
@@ -70,11 +70,11 @@ def get_unprovisioned_devices(db_user:str, db_pass:str, db_name,host="localhost"
         database=db_name
     )
     mycursor=mydb.cursor()
-    # mycursor.execute("SELECT tr069server_device.ip FROM tr069server_device WHERE tr069server_provisioningstatus.status=0")
 
     """ SELECT provisioningstatus.ip, provisioningstatus.status,device.customer_code FROM device
              INNER JOIN provisioningstatus 
              ON provisioningstatus.ip = device.ip  ") """
+
     mycursor.execute("SELECT tr069server_provisioningstatus.ip,tr069server_provisioningstatus.status,tr069server_device.customer_code FROM tr069server_device INNER JOIN tr069server_provisioningstatus ON tr069server_provisioningstatus.ip = tr069server_device.ip WHERE tr069server_provisioningstatus.status = 0")
 
     for row in mycursor:
@@ -87,9 +87,11 @@ def main() -> None:
     env = environ.Env()
     path = Path(__file__).resolve().parent.parent.parent
     environ.Env.read_env(f"{path}/.env")
+    
     db_name = env("DATABASE_NAME")
     db_user = env("DATABASE_USER")
     db_pass = env("DATABASE_PASS")
+    
     devices = get_unprovisioned_devices(db_user,db_pass,db_name)
     
     for device in devices:

@@ -4,13 +4,16 @@ from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import filters
-
+from django.http import HttpResponseRedirect
 from tr069server.models import Device
 
-from tr069server.serializers import UserSerializer, DeviceSerializer
+from tr069server.serializers import DeviceSerializer
 
 
 # Create your views here.
+def home_redirect_view(request):
+    return HttpResponseRedirect('/admin/')
+
 
 class DeviceViewSet(viewsets.ModelViewSet):
     queryset = Device.objects.all()
