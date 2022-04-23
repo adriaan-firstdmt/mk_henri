@@ -1,3 +1,4 @@
+from dataclasses import dataclass,field
 from typing import List
 import mysql.connector
 from pathlib import Path
@@ -5,6 +6,16 @@ import paramiko
 import environ
 import requests
 from requests.auth import HTTPBasicAuth
+
+@dataclass
+class DeviceProvisioner:
+    customer_code:str 
+    ipaddress: str 
+    port: int = 22
+    username:str ='admin'
+    password:str = field(repr=False,default="")
+
+
 
 
 
@@ -42,12 +53,15 @@ class Mirkotik:
 
     def set_device_status_true(self) -> bool:
         url = "mem.griessels.site"
-        response = requests.post(f"http://{url}/api/devices/set_status_true/",  auth=HTTPBasicAuth('root', 'eentotagt'),data={"ip":self.host})
+        api_action = "api/devices/set_status_true"
+        # TODO abstractt to env variables 
+        response = requests.post(f"https://{url}/api/devices/set_status_true/",  auth=HTTPBasicAuth('root', 'eentotagt'),data={"ip":self.host})
         return response.json()['success']
 
 
     def run_tr069_ssh_command(self) -> bool:
-        command = "/tr069-client set acs-url=\\ \nhttp://demo-axtract.firstdmt.com:9675/live/CPEManager/CPEs/genericTR69 \\ \ncheck-certificate=no connection-request-password=Jo68gae2oNhG \\ \nconnection-request-username=ADqV1FkIrAtW enabled=yes \\ \nperiodic-inform-interval=5m"
+        tr069_url="http://demo-axtract.firstdmt.com:9675/live/CPEManager/CPEs/genericTR69"
+        command = "/tr069-client set acs-url=\\ \n{tr069_url} \\ \ncheck-certificate=no connection-request-password=Jo68gae2oNhG \\ \nconnection-request-username=ADqV1FkIrAtW enabled=yes \\ \nperiodic-inform-interval=5m"
         if not self.ssh_connect():
             return False
         _stdin, _stdout,_stderr = self.ssh_client.exec_command(f"{command}")

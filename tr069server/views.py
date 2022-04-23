@@ -26,6 +26,7 @@ class DeviceViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get","post"])
     def set_status_true(self,request) -> Response:
         """ Custom api action that sets the status of a device found by IP address if IP"""
+        
         ip = request.data['ip']
         device_query = Device.objects.filter(ip=ip)
 
@@ -38,13 +39,13 @@ class DeviceViewSet(viewsets.ModelViewSet):
 
         return Response({'success':True, "status_changed":device.provisioningstatus.status },status=status.HTTP_200_OK)
     
-    # TODO Add api to provision device
-    @action(detail=False, methods=["get","post"])
-    def provision_device(self,request) -> Response:
-        ip = request.data['ip']
-        device_query = Device.objects.filter(ip=ip)
+    # # TODO Add api to provision device
+    # @action(detail=False, methods=["get","post"])
+    # def provision_device(self,request) -> Response:
+    #     ip = request.data['ip']
+    #     device_query = Device.objects.filter(ip=ip)
 
-        if device_query.count() != 1:
-            return Response({'success':True, "status_changed":False },status=status.HTTP_404_NOT_FOUND)
+    #     if device_query.count() != 1:
+    #         return Response({'success':True, "status_changed":False },status=status.HTTP_404_NOT_FOUND)
         
-        return Response({'success':True, "status_changed":True },status=status.HTTP_200_OK)
+    #     return Response({'success':True, "status_changed":True },status=status.HTTP_200_OK)
