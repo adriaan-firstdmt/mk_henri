@@ -46,11 +46,14 @@ Environment Variables can be set in .env an example file of the required Variabl
 
 ###TASK 4 & 5
 1. Finish provisioning Class
-    1. parent class devices
+    1. ~~parent class devices~~
+        1. ~~Seprate Provisioning and Device responsiblities to seprate classes~~
+        2. ~~abstracted the Provsioning class to allow for future diffrent types of devices to be added~~  
     2. add api action that provisions device not just set its status
-    3. Validate SSH connection 
-    4. Improve Error handling of running the configuration command
-2. Implement a CRON job that
+    3. Validate SSH connection
+        1. add soft_fail flag to raise possible exceptions
+    4. ~~Improve Error handling of running the configuration command~~
+2. ~~Implement a CRON job that~~
     1. ~~Uses native SQL query language to get unprovisioned Routers~~
     2. ~~Then run a python script that interfaces with the app's API to configure the said routers provisioning status~~
     3. ~~run as Cron see ansible task point 5~~

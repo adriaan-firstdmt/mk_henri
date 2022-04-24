@@ -1,10 +1,9 @@
 from dataclasses import dataclass,field
-from enum import Enum, auto
 from typing import List
 import mysql.connector
 from pathlib import Path
 import environ
-from device.device import MirkotikProvisioner
+from device.device import Device, MirkotikProvisioner, Provisioner
 
 env = environ.Env()
 path = Path(__file__).resolve().parent.parent.parent
@@ -17,9 +16,12 @@ DEVICE_USER = env("DEVICE_USER")
 DEVICE_PASS = env("DEVICE_PASS")
 
 
-# in normal setting this will have also been a api reqeust to get all unprovisioned devices 
+
+
+
+# in normal Django/Django Rest Framework setting this will have also been a api reqeust to get all unprovisioned devices 
 def get_unprovisioned_devices(db_user:str, db_pass:str, db_name,host="localhost")-> List:
-    devices = []
+    devices: List[Device] = []
     mydb = mysql.connector.connect(
         host=host,
         user=db_user,
@@ -38,19 +40,21 @@ def get_unprovisioned_devices(db_user:str, db_pass:str, db_name,host="localhost"
     mycursor.execute("SELECT tr069server_provisioningstatus.ip,tr069server_provisioningstatus.status,tr069server_device.customer_code FROM tr069server_device INNER JOIN tr069server_provisioningstatus ON tr069server_provisioningstatus.ip = tr069server_device.ip WHERE tr069server_provisioningstatus.status = 0")
 
     for row in mycursor:
-        device = MirkotikProvisioner( customer_code=row[2],
-                                     ipaddress = row[0],
-                                    username=DEVICE_USER,
-                                    password=DEVICE_PASS)
+        device = Device(customer_code=row[2],ipaddress = row[0],username=DEVICE_USER,password=DEVICE_PASS)
         devices.append(device)
     
     return devices
 
 def main() -> None:
-    devices = get_unprovisioned_devices(DB_USER,DB_PASS,DB_NAME)  
+    devices = get_unprovisioned_devices(DB_USER,DB_PASS,DB_NAME)
     for device in devices:
-        if not device.ssh_initialize_tr069():
-            device.set_device_status_true()
+        provisioner = MirkotikProvisioner(device.ipaddress,username=device.username,password=device.password)  
+        if not device.provision_device(provisioner):
+            print(f"{device.ipaddress} provisioning Failed")
+            continue
+        print(f"{device.ipaddress} provisioning succesfull")
+
+            
     
 
 if __name__ == "__main__":
