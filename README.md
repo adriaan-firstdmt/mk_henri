@@ -50,6 +50,7 @@ Environment Variables can be set in .env an example file of the required Variabl
         1. ~~Seprate Provisioning and Device responsiblities to seprate classes~~
         2. ~~abstracted the Provsioning class to allow for future diffrent types of devices to be added~~  
     2. add api action that provisions device not just set its status
+        1. ~~update set_status_true api action to avoid DRY code~~
     3. Validate SSH connection
         1. add soft_fail flag to raise possible exceptions
     4. ~~Improve Error handling of running the configuration command~~

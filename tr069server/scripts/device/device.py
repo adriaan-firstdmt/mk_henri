@@ -59,17 +59,18 @@ class Device:
     password:str = field(repr=False,default="")
 
 
-    def set_device_status_true(self) -> bool:
+    def set_device_status(self,status) -> bool:
+        print(self.ipaddress)
         url = "mem.griessels.site"
         api_action = "api/devices/set_status_true"
         # TODO abstractt to env variables 
-        response = requests.post(f"https://{url}/api/devices/set_status_true/",  auth=HTTPBasicAuth('root', 'eentotagt'),data={"ip":self.ipaddress})
+        response = requests.post(f"https://{url}/api/devices/set_status/",  auth=HTTPBasicAuth('root', 'eentotagt'),data={"ip":self.ipaddress,'status':status})
         return response.json()['success']
 
     def provision_device(self,provisioner:Provisioner): 
         if not provisioner.initialize_tr069(soft_fail=True):
             return False
-        self.set_device_status_true()
+        self.set_device_status(True)
         return True
       
 
