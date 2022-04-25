@@ -3,10 +3,24 @@
 {% block content %}
 <div>
   <form action="." method="POST" enctype="multipart/form-data">
+        {% if results %}
+            <p class="errornote"><strong>IMPORT FAILED</strong> Please Correct Below Errors</p>
+              <ul class="errorlist" style="padding-top=10rem;!">
+              {% for fault in results  %}
+                <li>Fault at line: {{fault.line}} Value: {{fault.value}}</li>
+              {% endfor %}
+              </ul>
+        {% endif %}
+
       {{form.as_p}}
       <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
       <button type="submit">Upload file</button>
   </form>
-  
-</div
+</div>
+<div>
+
+</div>
+
+
+
 {% endblock %}

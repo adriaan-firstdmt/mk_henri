@@ -1,8 +1,15 @@
-from typing import Dict
+from dataclasses import dataclass
+from typing import Dict, List
 from django import forms
 from ..helperfunctions import validators as hvalidator
 from ..models import Device,ProvisioningStatus
 from django.db import IntegrityError
+
+@dataclass
+class FaultyLine:
+    line:str
+    value:str
+
 
 class CsvImport:
     csv_file = None
@@ -16,7 +23,7 @@ class CsvImport:
 # TODO add Line fault dataclass or similar class to improve future  handeling of line faults
 
 class DeviceCsvImport(CsvImport):
-    def validate_unique_ip(self,ipaddress):
+    def validate_unique_ip(self,ipaddress:str) -> bool:
         devices = Device.objects.all()
         if devices.filter(ip=ipaddress).count() > 0:
             return False
@@ -25,32 +32,21 @@ class DeviceCsvImport(CsvImport):
     def validate_csv_data(self):
         # TODO refactor to 2 methods one returning Bool for is valid 
         # and 1 for returning invalid data
-        faulty_line = []
+        faulty_lines:List[FaultyLine] = []
         """Validate IP address and CustomerCodes"""
-        #Validation van also be added as custom validator in the model
+        #Validation can also be added as custom validator in the model
 
         for row_count, row in enumerate(self.csv_data):
             collums = row.split(self.delimiter)
             row_count =  row_count+1
             if not hvalidator.validate_ip(collums[1]):
-                faulty_line.append( {
-                        'line':row_count,
-                        'value':collums[1],
-                        'msg':'{} is not a valid Ipaddress'.format(collums[1]) })
+                faulty_lines.append(FaultyLine(row_count,value=collums[1]))
             if not hvalidator.validate_customercode(collums[0]):
-                faulty_line.append({
-                    'line':row_count,
-                    'value':collums[0],
-                    'msg':'{} is not a valid Customer Code'.format(collums[0])
-                })
+                faulty_lines.append(FaultyLine(row_count,value=collums[0]))
             if not self.validate_unique_ip(collums[1]):
-                faulty_line.append({
-                    "line":row_count+1,
-                    "value": collums[1],
-                    "msg" : "{} already exist".format(collums[1])
-                })
-        if len(faulty_line) > 0:
-            return faulty_line
+                faulty_lines.append(FaultyLine(row_count,value=collums[1]))
+        if len(faulty_lines) > 0:
+            return faulty_lines
         
         return True
     
