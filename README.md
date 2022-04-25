@@ -36,7 +36,7 @@ Environment Variables can be set in .env an example file of the required Variabl
 5. ~~Setup CRON JOB for TASK 4~~
 
 #### Task 2
-1. Set up Database with native MySQL queries instead of Django builtin
+1. ~~Set up Database with native MySQL queries instead of Django builtin~~
 
 
 #### Task 3
