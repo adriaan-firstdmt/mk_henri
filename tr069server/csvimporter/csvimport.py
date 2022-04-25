@@ -1,9 +1,11 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Dict, List, Optional
 from django import forms
 from ..helperfunctions import validators as hvalidator
 from ..models import Device,ProvisioningStatus
 from django.db import IntegrityError
+
 
 @dataclass
 class FaultyLine:
@@ -12,7 +14,7 @@ class FaultyLine:
 
 
 
-class CsvImport:
+class CsvImport(ABC):
     csv_file = None
     csv_data = None
     delimiter = ";"
@@ -20,7 +22,12 @@ class CsvImport:
         self.csv_file = csv_file
         self.csv_data = self.csv_file.read().decode("utf-8").split()
         self.delimiter = delimiter
-
+    @abstractmethod
+    def validate_csv_data(self)->bool:
+        pass
+    @abstractmethod
+    def import_data(self,strict:bool=True) -> Optional[List[FaultyLine]]:
+        pass
 # TODO add Line fault dataclass or similar class to improve future  handeling of line faults
 
 class DeviceCsvImport(CsvImport):
