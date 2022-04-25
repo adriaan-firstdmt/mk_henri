@@ -41,7 +41,7 @@ Environment Variables can be set in .env an example file of the required Variabl
 
 #### Task 3
 1. Refactoring of validate_csv_data method on DeviceCSVImport Into 2 Methods
-    1. that only finds faulty lines
+    1. ~~that only finds faulty lines~~
     2. ~~that returns whether validation was successful~~
 
 ###TASK 4 & 5

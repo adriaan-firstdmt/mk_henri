@@ -37,7 +37,7 @@ class DeviceAdmin(admin.ModelAdmin):
            data_results = device_importer.import_data()
            data = {"form":csv_form,"results":data_results}
            
-           if data_results is not True: 
+           if data_results is not None: 
                 #Display error lines
                print("data results not true")
                return render(reqeust,"admin/tr069server/device/csv_upload.html", data)       
@@ -45,7 +45,7 @@ class DeviceAdmin(admin.ModelAdmin):
            print("import successful")    
            return redirect('/admin/tr069server/device')
             
-      
+        # if reqeust not POST
         data = {"form": csv_form}
         return render(reqeust,"admin/tr069server/device/csv_upload.html", data)
 

@@ -7,7 +7,7 @@
             <p class="errornote"><strong>IMPORT FAILED</strong> Please Correct Below Errors</p>
               <ul class="errorlist" style="padding-top=10rem;!">
               {% for fault in results  %}
-                <li>Fault at line: {{fault.line}} Value: {{fault.value}}</li>
+                <li>Fault at line: {{fault.line}} Value: {{fault.fault_msg}}</li>
               {% endfor %}
               </ul>
         {% endif %}

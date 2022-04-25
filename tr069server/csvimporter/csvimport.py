@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Dict, List
+from typing import Dict, List, Optional
 from django import forms
 from ..helperfunctions import validators as hvalidator
 from ..models import Device,ProvisioningStatus
@@ -7,8 +7,9 @@ from django.db import IntegrityError
 
 @dataclass
 class FaultyLine:
-    line:str
-    value:str
+    line:int
+    fault_msg:str
+
 
 
 class CsvImport:
@@ -28,46 +29,42 @@ class DeviceCsvImport(CsvImport):
         if devices.filter(ip=ipaddress).count() > 0:
             return False
         return True 
-
-    def validate_csv_data(self):
-        # TODO refactor to 2 methods one returning Bool for is valid 
-        # and 1 for returning invalid data
+    def find_faulty_lines(self) -> List[FaultyLine]:
         faulty_lines:List[FaultyLine] = []
-        """Validate IP address and CustomerCodes"""
-        #Validation can also be added as custom validator in the model
-
         for row_count, row in enumerate(self.csv_data):
             collums = row.split(self.delimiter)
             row_count =  row_count+1
             if not hvalidator.validate_ip(collums[1]):
-                faulty_lines.append(FaultyLine(row_count,value=collums[1]))
+                faulty_lines.append(FaultyLine(row_count,fault_msg=f"{collums[1]} invalid IP address"))
             if not hvalidator.validate_customercode(collums[0]):
-                faulty_lines.append(FaultyLine(row_count,value=collums[0]))
+                faulty_lines.append(FaultyLine(row_count,fault_msg=f"{collums[0]} invalid Customer Code"))
             if not self.validate_unique_ip(collums[1]):
-                faulty_lines.append(FaultyLine(row_count,value=collums[1]))
-        if len(faulty_lines) > 0:
-            return faulty_lines
-        
+                faulty_lines.append(FaultyLine(row_count,fault_msg=f"{collums[1]} not unique"))
+        return faulty_lines
+
+    def validate_csv_data(self) -> bool:
+        """Validate IP address and CustomerCodes"""
+        #Validation can also be added as custom validator in the model
+        if len( self.find_faulty_lines() ) > 0:
+            return False
         return True
     
-    def import_data(self,strict=True) -> Dict:
+    def import_data(self,strict=True) -> Optional[List[FaultyLine]]:
         """
             Import data from csv_file
-            if strict true invalid data will not be cause no data to be imported 
+            if strict true invalid data will cause no data to be imported 
         """
-        data_results = self.validate_csv_data()
+        is_vailidated = self.validate_csv_data()
        
-        if strict and data_results is not True:
-            return data_results
+        if strict and is_vailidated is not True:
+            return self.find_faulty_lines()
         
-        for row_count,row in enumerate(self.csv_data):
+        for row in self.csv_data:
             collums = row.split(self.delimiter)
             device = Device.objects.create(ip=collums[1],customer_code=collums[0])
-            # print(device)
             provisioningstatus = ProvisioningStatus(device=device,status=False)
             provisioningstatus.save()
 
-        return data_results
         
 
     
