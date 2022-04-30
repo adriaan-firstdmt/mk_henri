@@ -67,7 +67,7 @@ class Device:
         response = requests.post(f"https://{url}/api/devices/set_status/",  auth=HTTPBasicAuth('root', 'eentotagt'),data={"ip":self.ipaddress,'status':status})
         return response.json()['success']
 
-    def provision_device(self,provisioner:Provisioner): 
+    def provision_device(self,provisioner:Provisioner) -> bool: 
         if not provisioner.initialize_tr069(soft_fail=True):
             return False
         self.set_device_status(True)

@@ -3,7 +3,7 @@ from typing import List
 import mysql.connector
 from pathlib import Path
 import environ
-from device.device import Device, MirkotikProvisioner, Provisioner
+from device.device import Device, MirkotikProvisioner
 
 env = environ.Env()
 path = Path(__file__).resolve().parent.parent.parent
