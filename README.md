@@ -30,13 +30,15 @@ Environment Variables can be set in .env an example file of the required Variabl
 ####  Task 1 - Ansible [Repo](https://github.com/HGriessel/mk_ansible.git)
 
 1. ~~Fix MySQL user privileges~~
-1. Implement tags
+2. ~~Implement tags~~
 3. ~~Setup Lets Encrypt certificate for SSL~~
 4. ~~Implement Ansible Vault~~
 5. ~~Setup CRON JOB for TASK 4~~
+6. fix git clone
+
 
 #### Task 2
-1. Set up Database with native MySQL queries instead of Django builtin
+1. ~~Set up Database with native MySQL queries instead of Django builtin~~
 
 
 #### Task 3
